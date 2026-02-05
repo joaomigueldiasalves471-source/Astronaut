@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iPhone Pro - No Highlight</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --ios-bg: linear-gradient(180deg, #1a2a6c, #b21f1f, #fdbb2d);
+            --ios-blue: #007aff;
+            --phone-h: 85vh; 
+            --phone-w: calc(var(--phone-h) * 0.48);
+            --radius: 50px;
+        }
+
+        /* REMOVE O QUADRADO AZUL AO CLICAR */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        html, body { 
+            overflow: hidden; height: 100%; width: 100%; 
+            margin: 0; display: flex; justify-content: center; align-items: center; 
+            background: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* --- HARDWARE --- */
+        .iphone {
+            width: var(--phone-w); height: var(--phone-h);
+            background: #111; border-radius: var(--radius);
+            position: relative; border: 10px solid #2c2c2c;
+            box-shadow: 0 0 50px rgba(255,255,255,0.1);
+        }
+
+        .screen {
+            width: 100%; height: 100%; background: var(--ios-bg);
+            border-radius: calc(var(--radius) - 8px); overflow: hidden; position: relative;
+        }
+
+        .dynamic-island {
+            position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+            width: 35%; height: 28px; background: #000; border-radius: 20px; z-index: 2000;
+        }
+
+        /* --- HOME --- */
+        .status-bar { height: 40px; padding: 0 25px; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 12px; font-weight: bold; }
+
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; }
+
+        .app-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .app-icon {
+            width: 50px; height: 50px; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 24px; color: white;
+        }
+        .app-label { color: white; font-size: 10px; margin-top: 5px; }
+
+        .dock {
+            position: absolute; bottom: 20px; left: 15px; right: 15px; height: 80px;
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(20px);
+            border-radius: 28px; display: flex; justify-content: space-evenly; align-items: center;
+        }
+
+        /* --- JANELA DO APP --- */
+        .window {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 1500; display: none; flex-direction: column;
+            border-radius: calc(var(--radius) - 8px); 
+            overflow: hidden; 
+            animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .app-header {
+            padding: 45px 20px 15px;
+            background: #fdfdfd;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-title { font-weight: 800; font-size: 17px; color: #000; }
+
+        .scrollable-content { flex: 1; overflow-y: auto; padding: 20px; background: #fff; }
+
+        .store-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f2f2f2; }
+        .get-btn { background: #f1f1f7; color: var(--ios-blue); border: none; padding: 6px 18px; border-radius: 20px; font-weight: bold; }
+
+        /* --- HOME BAR SEMPRE AZUL --- */
+        .home-bar {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            width: 110px; height: 5px; 
+            background: var(--ios-blue) !important;
+            border-radius: 10px; z-index: 2100; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="iphone">
+    <div class="screen">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+            <span id="clock">15:00</span>
+            <div><i class="fas fa-signal" style="margin-right: 4px;"></i><i class="fas fa-battery-full"></i></div>
+        </div>
+
+        <div class="app-grid" id="main-grid"></div>
+
+        <div class="dock">
+            <div class="app-item" onclick="openApp('store')"><div class="app-icon" style="background:linear-gradient(#54b3ff, #007aff)"><i class="fas fa-bag-shopping"></i></div></div>
+            <div class="app-item" onclick="openApp('safari')"><div class="app-icon" style="background:#fff; color:#007aff"><i class="fab fa-safari"></i></div></div>
+            <div class="app-item" onclick="openApp('photos')"><div class="app-icon" style="background:#fff; color:#ff2d55"><i class="fas fa-images"></i></div></div>
+        </div>
+
+        <div class="home-bar" onclick="closeApp()"></div>
+    </div>
+
+    <div class="window" id="app-window">
+        <div class="app-header">
+            <span class="app-title" id="win-title">App</span>
+        </div>
+        <div class="scrollable-content" id="app-content"></div>
+        <div class="home-bar" onclick="closeApp()"></div>
+    </div>
+</div>
+
+<script>
+    const appsList = [
+        { id: 'snake', name: 'Snake Game', icon: 'fa-worm', color: '#4cd964' },
+        { id: 'calc', name: 'Calculadora', icon: 'fa-calculator', color: '#ff9f0a' },
+        { id: 'camera', name: 'Câmera', icon: 'fa-camera', color: '#333' },
+        { id: 'weather', name: 'Tempo', icon: 'fa-cloud-sun', color: '#3498db' },
+        { id: 'notes', name: 'Notas', icon: 'fa-note-sticky', color: '#f1c40f' },
+        { id: 'music', name: 'Música', icon: 'fa-music', color: '#fb233b' },
+        { id: 'maps', name: 'Mapas', icon: 'fa-map-marker-alt', color: '#34c759' }
+    ];
+
+    let installed = ['snake', 'calc'];
+
+    function renderHome() {
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = '';
+        installed.forEach(id => {
+            const app = appsList.find(a => a.id === id);
+            if(app) {
+                grid.innerHTML += `
+                    <div class="app-item" onclick="openApp('${app.id}')">
+                        <div class="app-icon" style="background:${app.color}"><i class="fas ${app.icon}"></i></div>
+                        <div class="app-label">${app.name}</div>
+                    </div>`;
+            }
+        });
+    }
+
+    function openApp(id) {
+        const win = document.getElementById('app-window');
+        const cont = document.getElementById('app-content');
+        const title = document.getElementById('win-title');
+        win.style.display = 'flex';
+        
+        if(id === 'store') {
+            title.innerText = "App Store";
+            let html = '<h2 style="margin-top:0">Explorar</h2>';
+            appsList.forEach(app => {
+                const isIns = installed.includes(app.id);
+                html += `
+                <div class="store-item">
+                    <div class="app-icon" style="background:${app.color}; width:42px; height:42px; font-size:18px; margin-right:12px;"><i class="fas ${app.icon}"></i></div>
+                    <div style="flex:1"><b>${app.name}</b></div>
+                    <button class="get-btn" onclick="install('${app.id}')">${isIns ? 'ABRIR' : 'OBTER'}</button>
+                </div>`;
+            });
+            cont.innerHTML = html;
+        } else {
+            const app = appsList.find(a => a.id === id) || {name: id};
+            title.innerText = app.name;
+            cont.innerHTML = `<div style="text-align:center; padding-top:40px;"><h3>${app.name}</h3><p>Clique na barra azul para voltar.</p></div>`;
+        }
+    }
+
+    function install(id) {
+        if(!installed.includes(id)) { installed.push(id); renderHome(); }
+        openApp(id);
+    }
+
+    function closeApp() { document.getElementById('app-window').style.display = 'none'; }
+
+    setInterval(() => {
+        const d = new Date();
+        document.getElementById('clock').innerText = d.getHours() + ":" + String(d.getMinutes()).padStart(2,'0');
+    }, 1000);
+
+    renderHome();
+</script>
+</body>
+</html>
